@@ -1,0 +1,6 @@
+#Stuff
+.idea/
+#virtual Env
+venv/
+# DB Lite
+db.sqlite3
