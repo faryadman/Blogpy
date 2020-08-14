@@ -4,3 +4,5 @@
 venv/
 # DB Lite
 db.sqlite3
+#Blog Migrations
+blog/migrations
