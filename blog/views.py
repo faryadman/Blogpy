@@ -1,6 +1,12 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from . import serializers
+
 from .models import *
 
 
@@ -47,3 +53,68 @@ class ContactPage(TemplateView):
 
 class AboutUsPage(TemplateView):
     template_name = 'page-about.html'
+
+
+class SinglePage(TemplateView):
+    def article_detail(self, request, format=None):
+        return render(request, 'single-standard.html')
+
+
+class AllArticleAPIView(APIView):
+    def get(self, request, format=None):
+        try:
+            all_article = Article.objects.all().order_by('-created_at')
+            data = []
+            for article in all_article:
+                data.append({
+                    "title": article.title,
+                    "cover": article.cover.url if article.cover else None,
+                    "content": article.content,
+                    "created_at": article.created_at,
+                    "category": article.category.title,
+                    "author": article.author.user.first_name + ' ' + article.author.user.last_name,
+                    "promote": article.promote,
+                })
+                return Response({'data': data}, status=status.HTTP_200_OK)
+
+        except:
+            return Response({'status': "Internal server error , we'll check it later."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SingleArticleAPIView(APIView):
+    def get(self, request, format=None):
+        try:
+            article_title = request.GET['article_title']
+            article = Article.objects.filter(title__contains=article_title)
+            serilized_data = serializers.SingleArticleSerializer(article, many=True)
+            data = serilized_data.data
+
+            return Response({'data': data}, status=status.HTTP_200_OK)
+        except:
+            return Response({'status': "Internal server error , we'll check it later."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SearchArticleAPIView(APIView):
+    def get(self, request, format=None):
+        try:
+            from django.db.models import Q
+
+            query = request.GET['query']
+            articles = Article.objects.filter(Q(content__icontains=query))
+            data = []
+            for article in articles:
+                data.append({
+                    "title": article.title,
+                    "cover": article.cover.url if article.cover else None,
+                    "content": article.content,
+                    "created_at": article.created_at,
+                    "category": article.category.title,
+                    "author": article.author.user.first_name + ' ' + article.author.user.last_name,
+                    "promote": article.promote,
+                })
+                return Response({'data': data}, status=status.HTTP_200_OK)
+        except:
+            return Response({'status': "Internal server error , we'll check it later."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
