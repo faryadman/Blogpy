@@ -5,6 +5,9 @@ from datetime import datetime
 
 
 # user profile
+from taggit.managers import TaggableManager
+
+
 def Validate_file_extension(value):
     import os
     from django.core.exceptions import ValidationError
@@ -34,7 +37,7 @@ class Article(models.Model):
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     author = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     promote = models.BooleanField(default=False)
-
+    tag = TaggableManager()
     def __str__(self):
         return self.title
 

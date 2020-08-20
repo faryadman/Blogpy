@@ -121,8 +121,7 @@
                             
                             <div class="entry__content">
                                 <span class="entry__category"><a href="#0">{{ promote_article.category }}</a></span>
-
-                                <h1><a href="#0" title="">{{ promote_article.title }}</a></h1>
+                                <h1><a href="#" title="">{{ promote_article.title }}</a></h1>
 
                                 <div class="entry__info">
                                     <a href="#0" class="entry__profile-pic">
@@ -159,20 +158,20 @@
                     
                     <div class="item-entry" data-aos="zoom-in">
                         <div class="item-entry__thumb">
-                            <a href="../../wordsmith/single-standard.html" class="item-entry__thumb-link">
+                            <a href="/page/?page={{ article.id   }}" class="item-entry__thumb-link">
                                 <img src="{{ article.cover.url }}" alt="">
                             </a>
                         </div>
         
                         <div class="item-entry__text">    
                             <div class="item-entry__cat">
-                                <a href="../../wordsmith/category.html">{{ article.category }}</a>
+                                <a href="#">{{ article.category }}</a>
                             </div>
     
-                            <h1 class="item-entry__title"><a href="../../wordsmith/single-standard.html">{{ article.title }}</a></h1>
+                            <h1 class="item-entry__title"><a href="/page/?page={{ article.id }}">{{ article.title }}</a></h1>
                                 
                             <div class="item-entry__date">
-                                <a href="../../wordsmith/single-standard.html">{{ article.created_at.date }}</a>
+                                <a href="#">{{ article.created_at.date }}</a>
                             </div>
                         </div>
                     </div> <!-- item-entry -->
@@ -288,12 +287,9 @@
                         <h3>Categories</h3>
         
                         <ul class="linklist">
-                            <li><a href="#0">Lifestyle</a></li>
-                            <li><a href="#0">Travel</a></li>
-                            <li><a href="#0">Recipes</a></li>
-                            <li><a href="#0">Management</a></li>
-                            <li><a href="#0">Health</a></li>
-                            <li><a href="#0">Creativity</a></li>
+                            {% for category in all_categories %}
+                            <li><a href="#0">{{ category.title }}</a></li>
+                            {% endfor %}
                         </ul>
                     </div> <!-- end categories -->
         

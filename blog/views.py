@@ -1,13 +1,17 @@
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.template.defaultfilters import stringfilter
 from django.views.generic import TemplateView
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from . import serializers
-
+from django.template import loader
 from .models import *
+from taggit.models import Tag
+from django.db.models import Count
 
 
 class IndexPage(TemplateView):
@@ -19,6 +23,9 @@ class IndexPage(TemplateView):
         paginator = Paginator(all_articles, 4)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
+
+        # for categories
+        all_categories=Category.objects.all()
 
         for article in all_articles:
             article_data.append({
@@ -43,6 +50,7 @@ class IndexPage(TemplateView):
             'article_data': article_data,
             'promote_article_data': promote_data,
             'page_obj': page_obj,
+            'all_categories': all_categories,
         }
         return render(request, 'index.html', context)
 
@@ -56,8 +64,32 @@ class AboutUsPage(TemplateView):
 
 
 class SinglePage(TemplateView):
-    def article_detail(self, request, format=None):
-        return render(request, 'single-standard.html')
+    def get(self, request, **kwargs):
+        article_data = []
+
+        # for pagination
+        page_number = request.GET.get('page')
+        print(page_number)
+        all_articles = Article.objects.filter(pk=page_number)
+        common_tags = Article.tag.most_common()[:5]
+
+        for article in all_articles:
+            article_data.append({
+                "title": article.title,
+                "cover": article.cover.url if article.cover else None,
+                "content": article.content,
+                "created_at": article.created_at,
+                "category": article.category.title,
+                "author": article.author.user.first_name + ' ' + article.author.user.last_name,
+                "author_avatar": article.author.avatar.url if article.author.avatar else None,
+                "author_description": article.author.description,
+                "tags": article.tag.most_common(),
+                "promote": article.promote,
+            })
+        context = {
+            'page_article_data': article_data,
+        }
+        return render(request, 'single-standard.html', context)
 
 
 class AllArticleAPIView(APIView):
@@ -83,6 +115,7 @@ class AllArticleAPIView(APIView):
 
 
 class SingleArticleAPIView(APIView):
+
     def get(self, request, format=None):
         try:
             article_title = request.GET['article_title']
@@ -97,6 +130,7 @@ class SingleArticleAPIView(APIView):
 
 
 class SearchArticleAPIView(APIView):
+
     def get(self, request, format=None):
         try:
             from django.db.models import Q
@@ -115,6 +149,7 @@ class SearchArticleAPIView(APIView):
                     "promote": article.promote,
                 })
                 return Response({'data': data}, status=status.HTTP_200_OK)
+
         except:
             return Response({'status': "Internal server error , we'll check it later."},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
